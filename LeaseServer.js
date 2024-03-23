@@ -60,6 +60,55 @@ app.post('/login', (req, res) => {
 
 });
 
+app.post('/addTenant', (req, res) => {
+  //add tenant information
+  
+  let data;
+  let db = new sqlite3.Database('./db/LeaseServer.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Connected to the in-memory SQlite database.');
+  });
+
+  console.log(`trying to insert data`);
+  db.run(`INSERT 
+            INTO 
+         TENANT (
+                FIRSTNAME, 
+                LASTNAME, 
+                CHECKIN, 
+                AMOUNT) 
+         VALUES(?,?,?,?)`,
+                [`${req.body.firstName}`, 
+                `${req.body.lastName}`, 
+                `${req.body.checkInDate}`, 
+                `${req.body.amount}`], 
+        (err) => {
+          if (err) {
+            console.log('error inserting data');
+            data = {message: false};
+            res.json(data);
+            return console.error(err.message);
+          }
+
+          console.log('data successfully inserted');
+          data = {message: true};        
+          res.json(data);
+        }
+  );
+  
+
+  // close the database connection
+  db.close((err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Closed the database connection.');
+  });
+
+});
+
 app.get('/logout',(req, res) => {
   // implement user logout, e.g. invalidate the token
 });
