@@ -1,0 +1,19 @@
+.UpdateTenant {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
+}
+
+#FirstOrLastName {
+    margin: 10px;
+}
+
+.UpdateTenantLabel {
+    text-align: right;
+    padding: 10px;
+}
+
+.SearchName {
+    margin: 10px;
+}
