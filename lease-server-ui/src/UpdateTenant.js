@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import axios from 'axios';
 
 import NavBar from "./NavBar";
 import './App.css';
@@ -7,6 +8,65 @@ import './UpdateTenant.css';
 function UpdateTenant() {
   
     const [firstOrLastName, setFirstOrLastName] = useState('');
+    const [firstName, setFirstName] = useState('');
+    const [lastName, setLastName]  = useState('');
+    const [checkInDate, setCheckInDate] = useState(Date.now());
+    const [amount, setAmount] = useState(0.00);
+
+    const searchTenant = async (e) => {
+      try {
+        e.preventDefault();
+        if(firstOrLastName === '') {
+          alert('Please enter a First or Last name in the search box.');
+          return;
+        }
+
+        // send a post request to your backend to authenticate
+        const response = await axios.post('http://localhost:3001/searchTenant',  {firstOrLastName});  
+        if( JSON.stringify(response.data.firstName) !== undefined &&
+            JSON.stringify(response.data.lastName) !== undefined &&
+            new Date(response.data.checkInDate).toISOString().substring(0, 10) !== undefined && 
+            JSON.stringify(response.data.amount) !== undefined) {
+              setFirstName(response.data.firstName);
+              setLastName(response.data.lastName);
+              setCheckInDate(new Date(response.data.checkInDate).toISOString().substring(0, 10));
+              setAmount(response.data.amount);         
+        } else {
+              alert("No records found for the given First/Last Name.");
+        }     
+        setFirstOrLastName('');
+
+
+      } catch (error) {
+        if(error) {
+            console.error(error);
+        }
+      }
+    }
+
+    const updateTenant = async (e) => {
+      try {
+        e.preventDefault();
+
+        // send a post request to your backend to authenticate
+        const response = await axios.post('http://localhost:3001/updateTenant',  {firstName, lastName, checkInDate, amount});  
+        if(JSON.stringify(response.data.message) === "true") {
+          alert("Tenant has been updated!");           
+        } else {
+            alert("Error updating Tenant.");
+        }     
+        setFirstName('');
+        setLastName('');
+        setCheckInDate(Date.now());
+        setAmount(0.00);
+
+
+      } catch (error) {
+        if(error) {
+            console.error(error);
+        }
+      }
+    }    
 
     return (    
       <div class="App">
@@ -15,13 +75,13 @@ function UpdateTenant() {
           <div>
             <input      type='text' 
                         id='FirstOrLastName' 
-                        placeholder="Enter Tenant's First Name or Last Name"
+                        placeholder="Enter Tenant's First/Last Name"
                         alt='FirstOrLastName'                        
                         value={firstOrLastName}
                         onChange={(e)=> setFirstOrLastName(e.target.value) }
               /> 
               <button className="SearchName" type='submit'
-                    onClick=''>Search</button>
+                    onClick={searchTenant}>Search</button>
           </div>
           <div>            
             <label className='UpdateTenantLabel' htmlFor='FirstName'>First Name</label>                         
@@ -29,8 +89,9 @@ function UpdateTenant() {
                       id='FirstName' 
                       placeholder='FirstName' 
                       alt='FirstName'         
-                      readOnly='true'            
-                      /**onChange=''**/
+                      readOnly='true' 
+                      value={firstName}
+                      onChange={(e) => setFirstName(e.target.value)}                               
             /> 
           </div>
 
@@ -41,7 +102,8 @@ function UpdateTenant() {
                     placeholder='LastName' 
                     alt='LastName'       
                     readOnly='true'              
-                    /**onChange=''**/
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
              />  
           </div>
 
@@ -51,7 +113,8 @@ function UpdateTenant() {
                     id='CheckInDate' 
                     placeholder='CheckInDate' 
                     alt='CheckInDate' 
-                    /**onChange=''**/
+                    value={checkInDate}
+                    onChange={(e) => setCheckInDate(e.target.value)}
             />
           </div>  
 
@@ -63,8 +126,14 @@ function UpdateTenant() {
                     id='Amount' 
                     placeholder='Amount' 
                     alt='Amount' 
-                    /**onChange=''**/
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
             />  
+          </div>
+
+          <div>
+            <button className="UpdateTenantBtn" type='submit'
+                    onClick={updateTenant}>Update Tenant Info</button>
           </div>
 
         </div>    

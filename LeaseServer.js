@@ -109,6 +109,102 @@ app.post('/addTenant', (req, res) => {
 
 });
 
+app.post('/searchTenant', (req, res) => {
+  //search tenant information
+  
+  let data;
+  let db = new sqlite3.Database('./db/LeaseServer.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Connected to the in-memory SQlite database.');
+  });
+
+  console.log(`trying to search data`);
+  db.get(` SELECT ` +
+          ` FIRSTNAME FIRSTNAME, ` +
+          ` LASTNAME LASTNAME, ` +
+          ` CHECKIN CHECKIN, ` +
+          ` AMOUNT AMOUNT ` +
+        ` FROM ` +
+          ` TENANT ` +
+        ` WHERE ` +
+          ` UPPER(FIRSTNAME)=? OR ` +
+          ` UPPER(LASTNAME)=? `, 
+          [
+            req.body.firstOrLastName.toUpperCase(), 
+            req.body.firstOrLastName.toUpperCase()
+          ], (err, row) => {  
+            
+    if (err) {
+      console.error(err.message);
+    }
+
+    const data =  { 
+                  firstName: row.FIRSTNAME,
+                  lastName: row.LASTNAME,
+                  checkInDate: row.CHECKIN,
+                  amount: row.AMOUNT
+                  };
+    res.json(data);
+  });
+  
+
+  // close the database connection
+  db.close((err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Closed the database connection.');
+  });
+
+});
+
+app.post('/updateTenant', (req, res) => {
+  //add tenant information
+  
+  let data;
+  let db = new sqlite3.Database('./db/LeaseServer.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Connected to the in-memory SQlite database.');
+  });
+
+  console.log(`trying to update data`);
+  data = [req.body.checkInDate, req.body.amount, req.body.firstName, req.body.lastName];
+  db.run(`UPDATE            
+          TENANT 
+            SET CHECKIN = ?,
+                AMOUNT=?               
+            WHERE FIRSTNAME=? AND 
+                LASTNAME=? `,
+                data, 
+        (err) => {
+          if (err) {
+            console.log('error updating data');
+            data = {message: false};
+            res.json(data);
+            return console.error(err.message);
+          }
+
+          console.log('data successfully updated');
+          data = {message: true};        
+          res.json(data);
+        }
+  );
+  
+
+  // close the database connection
+  db.close((err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Closed the database connection.');
+  });
+
+});
+
 app.get('/logout',(req, res) => {
   // implement user logout, e.g. invalidate the token
 });
