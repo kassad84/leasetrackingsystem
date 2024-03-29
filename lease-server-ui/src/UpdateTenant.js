@@ -12,6 +12,7 @@ function UpdateTenant() {
     const [lastName, setLastName]  = useState('');
     const [checkInDate, setCheckInDate] = useState(Date.now());
     const [amount, setAmount] = useState(0.00);
+    const [paid, setPaid] = useState(false);
 
     const searchTenant = async (e) => {
       try {
@@ -22,15 +23,22 @@ function UpdateTenant() {
         }
 
         // send a post request to your backend to authenticate
-        const response = await axios.post('http://localhost:3001/searchTenant',  {firstOrLastName});  
+        const response = await axios.post('http://localhost:3001/searchTenant',  {firstOrLastName});
         if( JSON.stringify(response.data.firstName) !== undefined &&
             JSON.stringify(response.data.lastName) !== undefined &&
             new Date(response.data.checkInDate).toISOString().substring(0, 10) !== undefined && 
-            JSON.stringify(response.data.amount) !== undefined) {
+            JSON.stringify(response.data.amount) !== undefined && 
+            JSON.stringify(response.data.paid) !== undefined) {
               setFirstName(response.data.firstName);
               setLastName(response.data.lastName);
               setCheckInDate(new Date(response.data.checkInDate).toISOString().substring(0, 10));
-              setAmount(response.data.amount);         
+              setAmount(response.data.amount); 
+              if(response.data.paid === 'Y') {
+                setPaid(true);  
+              } else {
+                setPaid(false);
+              }
+                    
         } else {
               alert("No records found for the given First/Last Name.");
         }     
@@ -49,7 +57,8 @@ function UpdateTenant() {
         e.preventDefault();
 
         // send a post request to your backend to authenticate
-        const response = await axios.post('http://localhost:3001/updateTenant',  {firstName, lastName, checkInDate, amount});  
+        const paidFl = (paid === true)?'Y':'N';
+        const response = await axios.post('http://localhost:3001/updateTenant',  {firstName, lastName, checkInDate, amount,paidFl});  
         if(JSON.stringify(response.data.message) === "true") {
           alert("Tenant has been updated!");           
         } else {
@@ -59,6 +68,7 @@ function UpdateTenant() {
         setLastName('');
         setCheckInDate(Date.now());
         setAmount(0.00);
+        setPaid(false);
 
 
       } catch (error) {
@@ -69,7 +79,7 @@ function UpdateTenant() {
     }    
 
     return (    
-      <div class="App">
+      <div className="App">
         <NavBar/>
         <div className="UpdateTenant">
           <div>
@@ -89,7 +99,7 @@ function UpdateTenant() {
                       id='FirstName' 
                       placeholder='FirstName' 
                       alt='FirstName'         
-                      readOnly='true' 
+                      readOnly={true} 
                       value={firstName}
                       onChange={(e) => setFirstName(e.target.value)}                               
             /> 
@@ -101,7 +111,7 @@ function UpdateTenant() {
                     id='LastName' 
                     placeholder='LastName' 
                     alt='LastName'       
-                    readOnly='true'              
+                    readOnly={true}              
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
              />  
@@ -129,6 +139,17 @@ function UpdateTenant() {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
             />  
+          </div>
+
+          <div>            
+            <label className='UpdateTenantLabel' htmlFor='Paid'>Paid</label>                         
+            <input  type='checkbox' 
+                      id='Paid' 
+                      placeholder='Paid' 
+                      alt='Paid'         
+                      checked={paid}
+                      onChange={(e) => setPaid(e.target.checked)}                               
+            /> 
           </div>
 
           <div>

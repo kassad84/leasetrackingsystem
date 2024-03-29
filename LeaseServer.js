@@ -125,7 +125,8 @@ app.post('/searchTenant', (req, res) => {
           ` FIRSTNAME FIRSTNAME, ` +
           ` LASTNAME LASTNAME, ` +
           ` CHECKIN CHECKIN, ` +
-          ` AMOUNT AMOUNT ` +
+          ` AMOUNT AMOUNT, ` +
+          ` PAID PAID ` +
         ` FROM ` +
           ` TENANT ` +
         ` WHERE ` +
@@ -139,14 +140,25 @@ app.post('/searchTenant', (req, res) => {
     if (err) {
       console.error(err.message);
     }
-
-    const data =  { 
-                  firstName: row.FIRSTNAME,
-                  lastName: row.LASTNAME,
-                  checkInDate: row.CHECKIN,
-                  amount: row.AMOUNT
-                  };
-    res.json(data);
+    if(row !== undefined) { 
+      const data =  { 
+                    firstName: row.FIRSTNAME,
+                    lastName: row.LASTNAME,
+                    checkInDate: row.CHECKIN,
+                    amount: row.AMOUNT,
+                    paid: row.PAID
+                    };
+      res.json(data);
+    } else {
+      const data =  { 
+        firstName: undefined,
+        lastName: undefined,
+        checkInDate: undefined,
+        amount: undefined,
+        paid: undefined
+        };
+      res.json(data);
+    }
   });
   
 
@@ -172,11 +184,12 @@ app.post('/updateTenant', (req, res) => {
   });
 
   console.log(`trying to update data`);
-  data = [req.body.checkInDate, req.body.amount, req.body.firstName, req.body.lastName];
+  data = [req.body.checkInDate, req.body.amount, req.body.paidFl, req.body.firstName, req.body.lastName];
   db.run(`UPDATE            
           TENANT 
-            SET CHECKIN = ?,
-                AMOUNT=?               
+            SET CHECKIN=?,
+                AMOUNT=?,
+                PAID=?               
             WHERE FIRSTNAME=? AND 
                 LASTNAME=? `,
                 data, 
