@@ -218,6 +218,70 @@ app.post('/updateTenant', (req, res) => {
 
 });
 
+app.post('/viewDues', (req, res) => {
+  //search tenant information
+  
+  let data;
+  let dataCollection = [];
+  let db = new sqlite3.Database('./db/LeaseServer.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Connected to the in-memory SQlite database.');
+  });
+
+  console.log(`trying to search data (View Dues)`);
+  db.all(` SELECT ` +
+          ` FIRSTNAME FIRSTNAME, ` +
+          ` LASTNAME LASTNAME, ` +
+          ` CHECKIN CHECKIN, ` +
+          ` AMOUNT AMOUNT, ` +
+          ` PAID PAID ` +
+        ` FROM ` +
+          ` TENANT ` +
+        ` WHERE ` +
+          ` CHECKIN <= ?`, 
+          [req.body.dueDate], (err, rows) => {  
+            
+    if (err) {
+      console.error(err.message);
+    }
+    rows.forEach( (row) => {
+        if(row !== undefined) {           
+          data =  { 
+                        firstName: row.FIRSTNAME,
+                        lastName: row.LASTNAME,
+                        checkInDate: row.CHECKIN,
+                        amount: row.AMOUNT,
+                        paid: row.PAID
+                        };                      
+        } else {          
+          data =  { 
+            firstName: undefined,
+            lastName: undefined,
+            checkInDate: undefined,
+            amount: undefined,
+            paid: undefined
+            };
+          
+        }                 
+        dataCollection.push(data);    
+    });
+
+    res.send(dataCollection);
+  });
+  
+
+  // close the database connection
+  db.close((err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Closed the database connection.');
+  });
+
+});
+
 app.get('/logout',(req, res) => {
   // implement user logout, e.g. invalidate the token
 });

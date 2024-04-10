@@ -1,0 +1,31 @@
+.ViewDues {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
+}
+
+.ViewDuesLabel {
+    text-align: right;
+    padding: 10px;
+}
+
+.Search { 
+    margin: 10px;
+}
+
+table, th, td {
+    border: 1px solid;
+}
+
+table {
+    margin: 10px;
+}
+
+th {
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+}
