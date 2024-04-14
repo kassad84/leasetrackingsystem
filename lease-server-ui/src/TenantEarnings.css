@@ -1,0 +1,15 @@
+.TenantEarnings {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
+}
+
+.TenantEarningsLabel {
+    text-align: right;
+    padding: 10px;
+}
+
+.Search { 
+    margin: 10px;
+}

@@ -10,6 +10,19 @@ const port = 3001; // or any other port you prefer
 app.use(bodyParser.json());
 app.use(cors());
 
+const server = app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
+
+process.on('SIGTERM', shutDown);
+process.on('SIGINT', shutDown);
+
+let connections = [];
+
+server.on('connection', connection => {
+    connections.push(connection);
+    connection.on('close', () => connections = connections.filter(curr => curr !== connection));
+});
 
 
 app.post('/login', (req, res) => {
@@ -282,24 +295,59 @@ app.post('/viewDues', (req, res) => {
 
 });
 
+app.post('/calculateEarnings', (req, res) => {
+  //search tenant information
+  
+  let data = 0;
+  let totalData;
+  let db = new sqlite3.Database('./db/LeaseServer.db', sqlite3.OPEN_READWRITE, (err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Connected to the in-memory SQlite database.');
+  });
+
+  console.log(`trying to search data (Calculate Earnings)`);
+  db.all(` SELECT ` +
+          ` AMOUNT AMOUNT ` +
+        ` FROM ` +
+          ` TENANT ` +
+        ` WHERE ` +
+          ` CHECKIN >= ? AND ` +
+          ` CHECKIN <= ? `, 
+          [req.body.dateFrom, 
+           req.body.dateTo], (err, rows) => {  
+            
+    if (err) {
+      console.error(err.message);
+    }
+    rows.forEach( (row) => {      
+        if(row !== undefined) {                   
+          data = parseFloat(data) + parseFloat(row.AMOUNT);                    
+        } else {      
+          data =  0;          
+        }                             
+    });
+    totalData = { 
+                  totalData: data
+                };
+    res.json(totalData);
+  });
+  
+
+  // close the database connection
+  db.close((err) => {
+    if (err) {
+      return console.error(err.message);
+    }
+    console.log('Closed the database connection.');
+  });
+
+});
+
 app.get('/logout',(req, res) => {
   // implement user logout, e.g. invalidate the token
 });
-
-const server = app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
-process.on('SIGTERM', shutDown);
-process.on('SIGINT', shutDown);
-
-let connections = [];
-
-server.on('connection', connection => {
-    connections.push(connection);
-    connection.on('close', () => connections = connections.filter(curr => curr !== connection));
-});
-
 
 function shutDown() {
   console.log('Received kill signal, shutting down gracefully');
